@@ -32,7 +32,13 @@ public class UTXO {
 	}
 
     public void addAndRemoveOutputsFrom(Transaction tx) {
-        //TODO
+        for(Output output : tx.getOutputs()) {
+            this.map.put(new Input(tx.getTxHash(), tx.getOutputs().indexOf(output)), output);
+        }
+
+	    for(Input input : tx.getInputs()) {
+            this.map.remove(input);
+        }
     }
 
     public Map<Input, Output> getUTXOMap(){

@@ -25,25 +25,46 @@ public class Application {
 
         // 0. To get started, we need a few (single address) Wallets. Create 2 wallets.
         //    Think of one of them as the "miner" (the one collecting "block rewards").
-
-        UTXO utxo = new UTXO();
+//        UTXO utxo = new UTXO();
         Wallet minerWallet = new Wallet("SomeAddress", utxo);
         Wallet myWallet = new Wallet("someAdress2", utxo);
-
-
 
         // 1. The first "block" (= round of transactions) contains only a coinbase
         //    transaction. Create a coinbase transaction that adds a certain
         //    amount to the "miner"'s address. Update the UTXO-set (add only).
-
         CoinbaseTx firstBlockCoinbase = new CoinbaseTx("genesis", 1, minerWallet.getAddress());
         utxo.addOutputFrom(firstBlockCoinbase);
 
-        
         // 2. The second "block" contains two transactions, the mandatory coinbase
         //    transaction and a regular transaction. The regular transaction shall
         //    send ~20% of the money from the "miner"'s address to the other address.
+        performRegularTransaction(minerWallet, myWallet);
 
+
+        // 3. Do the same once more. Now, the "miner"'s address should have two or more
+        //    unspent outputs (depending on the strategy for choosing inputs) with a
+        //    total of 2.6 * block reward, and the other address should have 0.4 ...
+        //    Validate the regular transaction ..
+        //    Update the UTXO-set ...
+        performRegularTransaction(minerWallet, myWallet);
+
+        // 4. Make a nice print-out of all that has happened, as well as the end status.
+        //
+        //      for each of the "block"s (rounds), print
+        //          "block" number
+        //          the coinbase transaction
+        //              hash, message
+        //              output
+        //          the regular transaction(s), if any
+        //              hash
+        //              inputs
+        //              outputs
+        //      End status: the set of unspent outputs
+        //      End status: for each of the wallets, print
+        //          wallet id, address, balance
+	}
+
+    private static void performRegularTransaction(Wallet minerWallet, Wallet myWallet) throws Exception {
         CoinbaseTx secondBlockCoinbase = new CoinbaseTx("hallo på do!", 1, minerWallet.getAddress());
         utxo.addOutputFrom(secondBlockCoinbase);
         Transaction secondBlockRegular = minerWallet.
@@ -89,32 +110,17 @@ public class Application {
             throw new Exception("Not valid block!");
 
         //      - The transaction is correctly signed by the sender
-        DSAUtil.verifyWithDSA(minerWallet.getPublicKey(), secondBlockRegular.getMessage(), secondBlockRegular.getSignature());
-        
+        if(DSAUtil.verifyWithDSA(minerWallet.getPublicKey(), secondBlockRegular.getMessage(), secondBlockRegular.getSignature())) {
+            throw new Exception("Not valid block!");
+        }
+
         //      - The transaction hash is correct
+        String newTxHash = HashUtil.base64Encode(HashUtil.sha256Hash(secondBlockRegular.getMessage()));
+        if (secondBlockRegular.getTxHash().equals(newTxHash))
+            throw new Exception("Not valid block!");
 
 
         //    Update the UTXO-set (both add and remove).
-        
-        // 3. Do the same once more. Now, the "miner"'s address should have two or more
-        //    unspent outputs (depending on the strategy for choosing inputs) with a
-        //    total of 2.6 * block reward, and the other address should have 0.4 ...
-        //    Validate the regular transaction ..
-        //    Update the UTXO-set ...
-	    
-        // 4. Make a nice print-out of all that has happened, as well as the end status.
-        //
-        //      for each of the "block"s (rounds), print
-        //          "block" number
-        //          the coinbase transaction
-        //              hash, message
-        //              output
-        //          the regular transaction(s), if any
-        //              hash
-        //              inputs
-        //              outputs
-        //      End status: the set of unspent outputs
-        //      End status: for each of the wallets, print
-        //          wallet id, address, balance
-	}
+        utxo.addAndRemoveOutputsFrom(secondBlockRegular);
+    }
 }

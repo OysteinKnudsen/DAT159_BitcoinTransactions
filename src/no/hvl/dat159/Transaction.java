@@ -22,8 +22,6 @@ public class Transaction {
 	
 	public Transaction(PublicKey senderPublicKey) {
 		this.senderPublicKey = senderPublicKey;
-
-
 	}
 	
 	public void addInput(Input input) {
@@ -44,10 +42,14 @@ public class Transaction {
 	}
 
 	public void calculateTxHash() {
-		byte[] sha256 = HashUtil.sha256Hash(inputsToString() + outputsToString());
+		byte[] sha256 = HashUtil.sha256Hash(getMessage());
 		txHash = HashUtil.base64Encode(sha256);
 	}
-	
+
+	public String getTxHash() {
+		return this.txHash;
+	}
+
 	public boolean isValid() {
 	    //TODO Complete validation of the transaction. Called by the Application.
 		if (inputs == null || outputs == null || senderPublicKey == null
