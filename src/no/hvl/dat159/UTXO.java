@@ -28,14 +28,14 @@ public class UTXO {
 	}
 	
 	public void addOutputFrom(CoinbaseTx ctx) {
-	    //TODO
+	    map.put(new Input(null, -1), ctx.getOutput());
 	}
 
     public void addAndRemoveOutputsFrom(Transaction tx) {
         //TODO
     }
 
-    public Map getUTXOMap(){
+    public Map<Input, Output> getUTXOMap(){
 		return map;
 	}
 }
