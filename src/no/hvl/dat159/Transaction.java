@@ -4,7 +4,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
-import no.hvl.dat159.DSAUtil;
 
 public class Transaction {
 
@@ -37,23 +36,32 @@ public class Transaction {
 	
 	@Override
 	public String toString() {
-		return "Transaction( " + txHash + " ) \n Inputs = " + getInputs() + " Outputs = " + getOutputs();
+		return "Transaction( " + txHash + " ) \n Inputs = " + inputsToString() + " Outputs = " + outputsToString();
 	}
 
 	public void signTxUsing(PrivateKey privateKey) {
-	    // TODO
+		signature = DSAUtil.signWithDSA(privateKey, getMessage());
 	}
 
 	public void calculateTxHash() {
-
+		byte[] sha256 = HashUtil.sha256Hash(inputsToString() + outputsToString());
+		txHash = HashUtil.base64Encode(sha256);
 	}
 	
 	public boolean isValid() {
 	    //TODO Complete validation of the transaction. Called by the Application.
+		if (inputs == null || outputs == null || senderPublicKey == null
+			|| signature == null || txHash == null)
+			return false;
+
 	    return true;
 	}
 
-	private String getInputs () {
+	public String getMessage() {
+		return inputsToString() + outputsToString();
+	}
+
+	private String inputsToString() {
 		String inputString = "";
 		for (Input input : inputs){
 			inputString += input.toString() + "\n";
@@ -61,14 +69,23 @@ public class Transaction {
 		return inputString;
 	}
 
-	private String getOutputs() {
+	private String outputsToString() {
 		String outputString = "";
 		for (Output output : outputs){
 			outputString += output.toString() + "\n";
 		}
 		return outputString;
 	}
-	
-   //TODO Getters?
 
+	public List<Input> getInputs() {
+		return inputs;
+	}
+
+	public List<Output> getOutputs() {
+		return outputs;
+	}
+
+	public byte[] getSignature() {
+		return signature;
+	}
 }

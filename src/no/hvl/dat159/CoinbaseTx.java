@@ -29,7 +29,16 @@ public class CoinbaseTx {
 	public String toString() {
 		return "CoinbaseTx( " + txHash + " ) \n Message = " + message + " Output = " + output.toString();
 	}
-	
-	//TODO Getters?
-	
+
+	public String getMessage() {
+		return message;
+	}
+
+	public Output getOutput() {
+		return output;
+	}
+
+	public String getTxHash() {
+		return txHash;
+	}
 }
